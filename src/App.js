@@ -1,87 +1,65 @@
 import React from 'react';
-import logo from './logo.svg';
+import {Header} from './components/Header';
 import './App.css';
+import {Player} from "./components/Player1";
+import {AddPlayerForm} from "./components/AddPlayerForm";
 
-class Counter extends React.Component {
-  state = {
-    score: 0
-  };
-
-  incrementScore = () => {
-    console.log(this);
-    this.setState(prevState => {
-      return {score: prevState.score + 1}
-    });
-  }
-
-  decrementScore = () => {
-    this.setState(prevState => {
-      return {score: prevState.score - 1}
-    });
-  }
-
-  render() {
-    return (
-      <div className="counter">
-        <button className="counter-action decrement" onClick={this.decrementScore}> - </button>
-        <span className="counter-score">{this.state.score}</span>
-        <button className="counter-action increment" onClick={this.incrementScore}> + </button>
-      </div>
-    );
-  }
-}
-
-const Player = (props) => {
-  console.log(props);
-  return (
-    <div className="player">
-      <span className="player-name">
-        <button className="remove-player" onClick={() => props.removePlayer(props.id)}>x</button>
-      </span>
-      <span className="player-name">
-        {props.name}
-      </span>
-      <Counter />
-    </div>
-  );
-}
-
-const Header = (props) => {
-  console.log(props);
-  return (
-    <header>
-      <h1>{ props.title }</h1>
-      <span className="stats">Players: { props.totalPlayers }</span>
-    </header>
-  )
-}
-
+let maxId = 4;
 class App extends React.Component {
   state = {
     players: [
-      {name: 'LDK', id: 1},
-      {name: 'HONG', id: 2},
-      {name: 'KIM', id: 3},
-      {name: 'PARK', id: 4},
+      {name: 'LDK', score: 5, id: 1},
+      {name: 'HONG', score: 6, id: 2},
+      {name: 'KIM', score: 7, id: 3},
+      {name: 'PARK', score: 8, id: 4}
     ]
   };
-  handleRemovePlayer = (id) => {
+  handleRemove = (id) => {
+    console.log('handleRemove: ', id);
     this.setState(prevState => {
-      return {
-        players: prevState.players.filter(item => item.id !== id)
-      }
+      const players = prevState.players.filter(player => player.id !== id);
+      return { players }; // es6 short hand property : 키와 값이 같으면 한쪽을 생략
+    });
+  }
+  handleChangeScore = (id, delta) => {
+    console.log('changeScore: ', id, delta);
+    this.setState(prevState => {
+      const players = [ ...prevState.players ];
+      players.forEach(player => {
+        if (player.id === id) {
+          player.score += delta;
+        }
+      });
+      return { players };
+    })
+
+
+
+
+  }
+  handleAddPlayer = (name) => {
+    console.log('handleAddPlayer', name);
+    this.setState(prevState => {
+      // 원본 배열 복사
+      const players = [...prevState.players];
+      // 끝에 추가
+      players.push({name: name, id: ++maxId, score: 0});
+      return {players};
     })
   }
+
   render() {
     return (
       <div className="scoreboard">
-        <Header title="My scoreboard" totalPlayers={this.state.players.length} />
+        <Header title="My Scoreboard" players={this.state.players}/>
 
-        {/*Players List*/}
-        { this.state.players.map(item => <Player name={item.name}
-                                                 key={item.id.toString()} removePlayer={this.handleRemovePlayer}
-                                                 id={item.id} />)
+        {
+          this.state.players.map(player => (
+            <Player name={player.name} score={player.score} id={player.id} key={player.id}
+                    removePlayer={this.handleRemove} changeScore={this.handleChangeScore} />
+          ))
         }
+        <AddPlayerForm addPlayer={this.handleAddPlayer}></AddPlayerForm>
       </div>
     );
   }
